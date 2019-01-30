@@ -89,7 +89,6 @@ public class RNAdMobRewardedVideoAdModule extends ReactContextBaseJavaModule imp
         sendEvent(EVENT_AD_LEFT_APPLICATION, null);
     }
 
-    @Override
     public void onRewardedVideoCompleted() {
         sendEvent(EVENT_VIDEO_COMPLETED, null);
     }
@@ -147,6 +146,11 @@ public class RNAdMobRewardedVideoAdModule extends ReactContextBaseJavaModule imp
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+                Activity currentActivity = getCurrentActivity();
+                if (currentActivity == null) {
+                  promise.reject("NO_ACTIVITY", "No activity.");
+                  return;
+                }
                 RNAdMobRewardedVideoAdModule.this.mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(getCurrentActivity());
 
                 RNAdMobRewardedVideoAdModule.this.mRewardedVideoAd.setRewardedVideoAdListener(RNAdMobRewardedVideoAdModule.this);
@@ -180,7 +184,7 @@ public class RNAdMobRewardedVideoAdModule extends ReactContextBaseJavaModule imp
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                if (mRewardedVideoAd.isLoaded()) {
+                if (mRewardedVideoAd != null && mRewardedVideoAd.isLoaded()) {
                     mRewardedVideoAd.show();
                     promise.resolve(null);
                 } else {
@@ -195,7 +199,11 @@ public class RNAdMobRewardedVideoAdModule extends ReactContextBaseJavaModule imp
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                callback.invoke(mRewardedVideoAd.isLoaded());
+              if (mRewardedVideoAd != null) {
+                 callback.invoke(mRewardedVideoAd.isLoaded());
+               } else {
+                 callback.invoke(false);
+               }
             }
         });
     }
